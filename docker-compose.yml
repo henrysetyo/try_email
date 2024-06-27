@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: einvoice
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: renbo123
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  app:
+    build: .
+    depends_on:
+      - db
+    environment:
+      - DB_NAME=einvoice
+      - DB_USER=postgres
+      - DB_PASS=renbo123
+      - DB_HOST=db
+    networks:
+      - app-network
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: kerenomad@admin.com
+      PGADMIN_DEFAULT_PASSWORD: renbo123
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
